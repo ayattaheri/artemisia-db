@@ -25,6 +25,7 @@ Welcome to the **Artemisia Database**, a comprehensive platform designed to faci
    - [BLAST](#blast)
    - [Co-expression Analysis](#co-expression-analysis)
    - [GO Enrichment](#go-enrichment)
+   - [Get Gene Sequences](#get-gene-sequences)
 8. [Download](#download)
 9. [About the Database](#about-the-database)
 10. [Tips and Troubleshooting](#tips-and-troubleshooting)
@@ -73,12 +74,12 @@ The **Gene Expression** menu contains four powerful tools for visualizing expres
 - **Purpose**: Calculate and visualize median gene expression across selected plant parts.
 - **Steps**:
   1. Go to **Gene Expression > Median Expression Per Part**.
-  2. Enter up to 20 gene IDs (one per line) in the text box or upload a `.txt`/`.csv` file. We added the example gene ID buttons to auto-fill the text box.
+  2. Enter up to 100 gene IDs (one per line) in the text box or upload a `.txt`/`.csv` file. We added the example gene ID buttons to auto-fill the text box.
   3. Select plant parts (e.g., "Root", "Leaf") using the checkboxes.
   4. Click **Calculate Median Expression**.
   5. View the resulting heatmap (log2-transformed data).
   6. Download the plot in your preferred format (PNG, JPEG, PDF) via **Download Plot**.
-- **Example**: Enter `GeneID1` and `GeneID2`, select "Leaf" and "Flower", then click "Calculate" to see a heatmap comparing their expression.
+- **Example**: Enter `mikado.chr7G1274` and `mikado.chr4G1337`, select "Leaf" and "Flower", then click "Calculate" to see a heatmap comparing their expression.
 
 
 ![Example Gene IDs](images/example_gene_ids.png "Example gene ID buttons and tissue selection")
@@ -93,14 +94,16 @@ The **Gene Expression** menu contains four powerful tools for visualizing expres
 
 ### Artemisinin Pathway Genes
 - **Purpose**: Focus on genes linked to artemisinin production in *Artemisia annua*, providing detailed information through a table with tabs for main data, expression, and sequences.
-- **Steps**: 
-  1. Navigate to **Gene Expression > Artemisinin Pathway Genes**.
+- **Steps**:
+  1. Navigate to **Gene Expression &gt; Artemisinin Pathway Genes**.
   2. View the "Main Table" tab, which lists artemisinin-related genes and their details.
-  3. Search by a single gene ID in the search box to filter the table and view its specific information.
-  4. Select one or more rows in the "Main Table" to reveal the **Check Gene Expression** and **Copy Gene ID(s)** buttons at the bottom left.
-  5. Click **Copy Gene ID(s)** to copy the selected gene IDs to the clipboard for use in other analyses.
-  6. Click **Check Gene Expression** to switch to the "Expression" tab, where you can select plant parts (e.g., "Leaf", "Root") and click **Calculate Median Expression** to generate a heatmap.
-  7. Switch to the "Sequence" tab to view and download the sequences of the selected genes as a text file.
+  3. Search by gene names or gene IDs (one per line) in the search box to filter the table and view specific information:
+  4. For gene IDs, enter the ID and press the **Search by Gene ID** button.
+  5. For gene names, enter the name and press the **Search by Gene Name** button.
+  6. Select one or more rows in the "Main Table" to reveal the **Check Gene Expression** and **Copy Gene ID(s)** buttons at the bottom left.
+  7. Click **Copy Gene ID(s)** to copy the selected gene IDs to the clipboard for use in other analyses.
+  8. Click **Check Gene Expression** to switch to the "Expression" tab, where you can select plant parts (e.g., "Leaf", "Root") and click **Calculate Median Expression** to generate a heatmap.
+  9. Switch to the "Sequence" tab to view and download the sequences of the selected genes as a text file.
 
 ---
 
@@ -110,7 +113,7 @@ The **Gene Expression** menu contains four powerful tools for visualizing expres
   1. Navigate to **Gene Expression > Overall Category Distribution**.
   2. View the donut chart displaying gene categories (e.g., "Specific").
   3. Click a segment (e.g., "Specific") to filter the table below by that category.
-  4. Alternatively, enter a single gene ID in the search box to find its category and display its details in the table.
+  4. Alternatively, enter gene ID(s) in the search box to find its category and display its details in the table.
   5. Select one or more rows in the "Main Table" to reveal the **Check Gene Expression** and **Copy Gene ID(s)** buttons at the bottom left.
   6. Click **Copy Gene ID(s)** to copy the selected gene IDs to the clipboard for use in other analyses.
   7. Click **Check Gene Expression** to switch to the "Expression" tab, where you can select plant parts (e.g., "Leaf", "Root") and click **Calculate Median Expression** to generate a heatmap.
@@ -126,8 +129,8 @@ The **Transcription Factors** menu offers three sub-tabs for analyzing transcrip
 - **Purpose**: Explore transcription factor (TF) families from the PlantTFDB database.
 - **Steps**:
   1. Navigate to **Transcription Factors > PlantTFDB**.
-  2. View the interactive TF family distribution plot (powered by Plotly).
-  3. Click on any bar in the plot (e.g., "bZIP") to filter the "Main Table" below based on your selection.
+  2. View the interactive TF family distribution plot.
+  3. Click on any bar in the plot (e.g., "bZIP") to filter the "Main Table" below based on your selection. You can also search different TF families based on the gene IDs.
   4. Switch to the "Details" box and explore:
      - **Main Table**: A filterable table displaying TF data. Select one or more rows to reveal the **Check Gene Expression** and **Copy Gene ID(s)** buttons at the bottom left. Clicking **Check Gene Expression** button automatically switches you to the "Expression" tab with the selected gene IDs pre-filled. Click **Copy Gene ID(s)** to copy the selected gene IDs to the clipboard for use in other analyses.
      - **Expression**: On this tab, choose different plant parts (e.g., "Root", "Leaf"), then click **Calculate Median Expression** to generate a heatmap of gene expression for the selected genes.
@@ -293,6 +296,13 @@ The **Transcription Factors** menu offers three sub-tabs for analyzing transcrip
      - **Table**: Lists enriched terms with details, filterable by "Root Node" and a "Max P.adjust" slider. Use the **Download** button to save the filtered table.
 
 ---
+### Get Gene Sequences
+- **Purpose**: Retrieve and download gene sequences for specified *Artemisia annua* gene IDs.
+- **Steps**: 
+  1. Navigate to **Tools > Get Gene Sequences**.
+  2. Enter gene IDs (one per line) in the text area (e.g., `mikado.chr1G1813`).
+  3. If ≤5 gene IDs are entered, view the sequences in the output area below the text input.
+  4. Click **Download Sequences** to save the sequences as a text file. Note: For >5 gene IDs, sequences are not displayed on-screen but can still be downloaded.
 
 
 ## Download
