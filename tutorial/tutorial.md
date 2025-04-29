@@ -78,7 +78,7 @@ The **Gene Expression** menu contains four powerful tools for visualizing expres
   3. Select plant parts (e.g., "Root", "Leaf") using the checkboxes.
   4. Click **Calculate Median Expression**.
   5. View the resulting heatmap (log2-transformed data).
-  6. Download the plot in your preferred format (PNG, JPEG, PDF) via **Download Plot**.
+  6. Download the plot in PNG format via clicking on the camera icon on the top right corner of the plot.
 - **Example**: Enter `mikado.chr7G1274` and `mikado.chr4G1337`, select "Leaf" and "Flower", then click "Calculate" to see a heatmap comparing their expression.
 
 
