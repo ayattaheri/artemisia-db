@@ -16,19 +16,22 @@ Welcome to the **Artemisia Database**, a comprehensive platform designed to faci
    - [PlantTFDB](#planttfdb)
    - [Pfam](#pfam)
    - [Tissue-specific TFs](#tissue-specific-tfs)
-5. [Functional Annotation](#functional-annotation)
-6. [Gene Editing and Epigenetics](#gene-editing-and-epigenetics)
+5. [Metabolomics](#metabolomics)
+   - [Data Explorer](#data-explorer)
+   - [Spectra Search](#spectra-search)
+6. [Functional Annotation](#functional-annotation)
+7. [Gene Editing and Epigenetics](#gene-editing-and-epigenetics)
    - [CRISPR](#crispr)
    - [Methylation](#methylation)
-7. [Tools](#tools)
+8. [Tools](#tools)
    - [JBrowse](#jbrowse)
    - [BLAST](#blast)
    - [Co-expression Analysis](#co-expression-analysis)
    - [GO Enrichment](#go-enrichment)
    - [Get Gene Sequences](#get-gene-sequences)
-8. [Download](#download)
-9. [About the Database](#about-the-database)
-10. [Tips and Troubleshooting](#tips-and-troubleshooting)
+9. [Download](#download)
+10. [About the Database](#about-the-database)
+11. [Tips and Troubleshooting](#tips-and-troubleshooting)
 
 ---
 
@@ -175,6 +178,54 @@ The **Transcription Factors** menu offers three sub-tabs for analyzing transcrip
 
 
 ---
+
+## Metabolomics
+The Metabolomics menu provides tools to explore and analyze metabolite data for *Artemisia annua*, including browsing metabolite datasets and searching mass spectrometry data (LC-MS and GC-MS). It includes two sub-tabs: Data Explorer and Spectra Search.
+
+### Data Explorer
+
+- **Purpose**: Browse and visualize *Artemisia annua* metabolite data through an interactive table and barplot, with options to filter by dataset, compound, or text search and download results.
+
+- **Steps**:
+
+  1. Navigate to **Metabolomics > Data Explorer**.
+  2. Select a dataset from the "Choose Dataset" dropdown (e.g., LC-MS: Nontargeted, GC-MS: VOCs).
+  3. Choose a specific compound from the "Choose Compound" dropdown.
+  4. Optionally, enter a search term (e.g., compound name, chemical formula, or class) in the "Search by Text" box to filter the table (e.g., "Artemisinin" or "C15H22O5").
+  5. View the filtered results in the "Table" tab, which displays metabolite details, including a "Compound ID" column with hyperlinks to PubChem for valid IDs.
+  6. Select one or more rows in the table to enable the "Download Filtered Table" button, then click to download the selected data as a CSV file.
+  7. Switch to the "Barplot" tab to view a barplot comparing the selected compound’s abundance in Wild Type Young Leaf and Wild Type Mature Leaf.
+
+
+
+### Spectra Search
+
+- **Purpose**: Search Artemisia annua metabolite spectra using LC-MS or GC-MS data by specifying ionization modes, mass values, retention times, or retention indices.
+
+- **LC-MS Search:**
+
+- **Purpose**: Query LC-MS spectra by ionization mode, Q1, and Q3 mass values to identify metabolites.
+
+- **Steps:**
+
+  1. Navigate to **Metabolomics > Spectra Search > LC-MS Search**.
+  2. Select one or more ionization modes (e.g., "[M+H]+", "[M-H]-", or "All") from the dropdown.
+  3. Enter Q1 (Da) and Q3 (Da) values with desired tolerances.
+  4. Click Search LC-MS Spectra to view matching metabolites in a table.
+  5. The table includes a "Compound ID" column with hyperlinks to PubChem for valid IDs.
+
+
+### GC-MS Search:
+
+- **Purpose**: Query GC-MS spectra for volatile organic compounds (VOCs) by exact mass, retention time, and retention index.
+
+- **Steps:**
+
+  1. Navigate to **Metabolomics > Spectra Search > GC-MS Search**.
+  2. Enter Exact Mass (Da), Retention Time, and Retention Index with their respective tolerances.
+  3. Click Search GC-MS Spectra to view matching VOCs in a table.
+  4. The table includes a "Compound ID" column with hyperlinks to PubChem for valid IDs.
+
 
 ## Functional Annotation
 
