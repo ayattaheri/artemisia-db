@@ -1,10 +1,40 @@
+## Table of Contents
+  - [Table of Contents](#table-of-contents)
+- [Artemisia Database Development: Bash Scripts](#artemisia-database-development-bash-scripts)
+  - [Conversion of SRA Files to FASTQ Using fastq-dump (3.1.0)](#conversion-of-sra-files-to-fastq-using-fastq-dump-310)
+  - [Converting Paired-End SRA Files to FASTQ](#converting-paired-end-sra-files-to-fastq)
+  - [Converting Single-End SRA Files to FASTQ](#converting-single-end-sra-files-to-fastq)
+  - [Compressing FASTQ Files to FASTQ.GZ](#compressing-fastq-files-to-fastqgz)
+  - [Deleting Non-GZ Files](#deleting-non-gz-files)
+  - [Quality Control and Adapter Removal Using fastp (0.23.2)](#quality-control-and-adapter-removal-using-fastp-0232)
+  - [Quality Control for Short-Read Data (Paired-End and Single-End)](#quality-control-for-short-read-data-paired-end-and-single-end)
+  - [Extracting Quality Metrics from fastp JSON Files](#extracting-quality-metrics-from-fastp-json-files)
+  - [Quality Control for Long-Read RNA Sequencing Data](#quality-control-for-long-read-rna-sequencing-data)
+  - [Alignment of RNA Sequencing Data](#alignment-of-rna-sequencing-data)
+  - [Installation of Tools](#installation-of-tools)
+  - [Alignment of Short-Read RNA Sequencing Data Using HISAT2](#alignment-of-short-read-rna-sequencing-data-using-hisat2)
+  - [Alignment of Long-Read RNA Sequencing Data Using minimap2](#alignment-of-long-read-rna-sequencing-data-using-minimap2)
+  - [Filtering and Transcriptome Assembly of RNA Sequencing Data](#filtering-and-transcriptome-assembly-of-rna-sequencing-data)
+  - [Installation of Tools](#installation-of-tools)
+  - [Filtering Uniquely Mapped Reads Using samtools](#filtering-uniquely-mapped-reads-using-samtools)
+  - [Merging Long-Read Alignments](#merging-long-read-alignments)
+  - [Transcriptome Assembly of Short-Read Sequences Using StringTie](#transcriptome-assembly-of-short-read-sequences-using-stringtie)
+  - [Merging Short-Read StringTie Assemblies](#merging-short-read-stringtie-assemblies)
+  - [Transcriptome Assembly of Long-Read Sequences Using StringTie](#transcriptome-assembly-of-long-read-sequences-using-stringtie)
+  - [Transcriptome Assembly of Long-Read Sequences Using IsoQuant](#transcriptome-assembly-of-long-read-sequences-using-isoquant)
+  - [Indexing the Genome for Faster Processing](#indexing-the-genome-for-faster-processing)
+  - [Extracting Reference Transcriptome](#extracting-reference-transcriptome)
+  - [Transcriptome Quality Assessment Using BUSCO (v5.7.1)](#transcriptome-quality-assessment-using-busco-v571)
+  - [Installation of BUSCO](#installation-of-busco)
+  - [BUSCO Analysis for Reference Genome](#busco-analysis-for-reference-genome)
+  - [BUSCO Analysis for Transcriptome Assemblies](#busco-analysis-for-transcriptome-assemblies)
 
 # Artemisia Database Development: Bash Scripts
 
 ## Conversion of SRA Files to FASTQ Using fastq-dump (3.1.0)
 ### Installation of sra-tools
 
-Due to issues with an older version of `sra-tools` (2.8.0), version 3.1.0 is recommended. I downloaded the latest version from Bioconda and installed it using the following command:
+Due to issues with an older version of `sra-tools` (2.8.0), version 3.1.0 is recommended. Download the latest version from Bioconda and install it using the following command:
 
 ```bash
 conda install sra-tools-3.1.0-h9f5acd7_0.tar.bz2
@@ -1017,7 +1047,7 @@ Extract transcript sequences from the reference annotation:
 gffread -w <path_to_assembly>/transcriptome.fa -g <path_to_genome>/LQ-9_phase0_genome.fasta <path_to_genome>/LQ-9_phase0_genome.gtf
 ```
 
-# Transcriptome Quality Assessment Using BUSCO (v5.7.1)
+## Transcriptome Quality Assessment Using BUSCO (v5.7.1)
 
 ## Installation of BUSCO
 
@@ -2049,181 +2079,3 @@ For a broader functional annotation, you can search your transcripts against the
 #SBATCH --job-name=blastx_uni
 #SBATCH --partition=64c512g
 #SBATCH -N 1
-#SBATCH --ntasks-per-node=64
-#SBATCH --output=%j.out
-#SBATCH --error=%j.err
-
-module load miniconda3
-source activate mikado
-
-# Define paths for the database, query, and output
-database="/path/to/your/uniprot/uniprot_sprot_new.dmnd"
-query="/path/to/your/mikado.fasta"
-output="/path/to/your/functional_annotation/uniprot_blastx"
-
-# Run DIAMOND blastx with specified parameters
-diamond blastx -d "${database}" -q "${query}" -k 1 --ultra-sensitive \
-  --id 60 --max-target-seqs 1 --evalue 1e-5 --min-score 150 \
-  -o "${output}"/transcriptome_vs_uniprot.outfmt6
-```
-
-This process generates `transcriptome_vs_uniprot.outfmt6`, a file that provides comprehensive functional information by matching transcripts to well-characterized proteins in the Uniprot database.
-
-Here is the revised documentation for identifying transcription factors.
-
------
-
-### **Identification of Transcription Factors**
-
-Identifying transcription factors (TFs) is a crucial step in understanding gene regulation. We'll use two complementary approaches: a sequence homology search against a known TF database and a domain-based search using Pfam IDs.
-
------
-
-### **1. BLASTx against PlantTFDB**
-
-The first approach uses **DIAMOND blastx** to compare your transcripts against a comprehensive collection of known plant TFs from the PlantTFDB database. This is a robust way to find potential TFs based on sequence similarity.
-
-#### **Database Preparation**
-
-First, you need to download and prepare the PlantTFDB protein sequences for use with DIAMOND.
-
-```bash
-# Download the PlantTFDB FASTA file
-wget https://planttfdb.gao-lab.org/download/seq/PlantTFDB-all_TF_pep.fas.gz
-
-# Unzip the file
-gunzip PlantTFDB-all_TF_pep.fas.gz
-
-# Create a DIAMOND database from the protein sequences
-diamond makedb --in PlantTFDB-all_TF_pep.fas -d PlantTFDB-all_TF_db
-```
-
-#### **Running the Search**
-
-The following script runs `diamond blastx` to query your transcripts (`mikado.fasta`) against the prepared PlantTFDB database.
-
-```bash
-#!/bin/bash
-#SBATCH --job-name=blastx_tf_all
-#SBATCH --partition=64c512g
-#SBATCH -N 1
-#SBATCH --ntasks-per-node=64
-#SBATCH --output=%j.out
-#SBATCH --error=%j.err
-
-module load miniconda3
-source activate mikado
-
-# Define paths for the database, query, and output
-database="/path/to/your/plant_tf_db/PlantTFDB-all_TF_db.dmnd"
-query="/path/to/your/assembly/mikado.fasta"
-output="/path/to/your/functional_annotation/transcription_factor"
-
-# Run DIAMOND blastx with specified parameters
-diamond blastx -d "${database}" -q "${query}" --ultra-sensitive \
-  --id 60 --max-target-seqs 1 --evalue 1e-5 --min-score 150 \
-  -o "${output}"/transcriptome_vs_all_tf.outfmt6
-```
-
-
-### **2. Pfam ID-based Filtering**
-
-The second approach identifies TFs by looking for specific protein domains. This is done by filtering the results from a tool like InterProScan to find entries with **Pfam IDs** that are known to be associated with TF families. A list of these 63 TF-related Pfam IDs would be used to filter your InterProScan output. This is typically accomplished using a custom script or a data analysis tool like R.
-
-
-### **CRISPR Guide Sequence Identification with CRISPRCasFinder**
-
-The process for identifying CRISPR guide sequences uses the **CRISPRCasFinder** tool, which is run via a Singularity container to manage its dependencies.
-
------
-
-### **Setup and Pre-processing**
-
-1.  **Install Singularity**: Create a new Conda environment and install Singularity, which is a container platform necessary to run CRISPRCasFinder.
-
-    ```bash
-    conda env create -n casfinder -y
-    conda activate casfinder
-    conda install -c conda-forge singularity -y
-    ```
-
-2.  **Download the Container**: Download the CRISPRCasFinder Singularity image file from its official website.
-
-    ```bash
-    wget https://crisprcas.i2bc.paris-saclay.fr/Home/DownloadFile?filename=CrisprCasFinder.simg
-    ```
-
-3.  **Clean FASTA Headers**: The CRISPRCasFinder tool may encounter errors with special characters, such as dots (`.`), in FASTA headers. You should first create a cleaned version of your FASTA file.
-
-    ```bash
-    awk '/^>/ { $1 = gensub(/\./, "_", "g", $1); print $1 } !/^>/ { print }' mikado.fasta > mikado_renamed.fasta
-    ```
-
------
-
-### **Running CRISPRCasFinder**
-
-The following SLURM script executes the CRISPRCasFinder tool inside the Singularity container, using the cleaned FASTA file as input.
-
-```bash
-#!/bin/bash
-#SBATCH --job-name=casfinder
-#SBATCH --partition=64c512g
-#SBATCH -N 1
-#SBATCH --ntasks-per-node=24
-#SBATCH --output=%j.out
-#SBATCH --error=%j.err
-
-module load miniconda3
-source activate casfinder
-
-# Define the directory where the container and input file are located
-casfinder_dir="/path/to/your/crispr_directory"
-singularity_image="${casfinder_dir}/CrisprCasFinder.simg"
-input_fasta="${casfinder_dir}/mikado_renamed.fasta"
-
-# Run the tool inside the container
-singularity exec -B "${casfinder_dir}" "${singularity_image}" perl /usr/local/CRISPRCasFinder/CRISPRCasFinder.pl -so /usr/local/CRISPRCasFinder/sel392v2.so -q -out mikado_crispr -in "${input_fasta}"
-```
-
------
-
-### **Identification of Artemisinin-Related Genes**
-
-To identify artemisinin-related genes in your transcriptome, you can use **BLAST** to compare your assembled transcripts against a known set of these genes from a reference genome or a scientific review.
-
-#### **Procedure**
-
-1.  **Extract Reference Genes**: Start with a list of known artemisinin-related gene IDs (`artemisinin-related-genes.ids`). Use `gffread` to extract the corresponding gene sequences from the reference genome into a FASTA file.
-
-    ```bash
-    grep -Fw -f artemisinin-related-genes.ids /path/to/your/genome/LQ-9_phase0_genome.gtf > artemisinin_realted.gtf
-    gffread -w artemisinin_realted_genes.fasta -g /path/to/your/genome/LQ-9_phase0_genome.fasta artemisinin_realted.gtf
-    ```
-
-2.  **BLAST against Your Transcriptome**: Use `blastn` to search these reference gene sequences against your `mikado.fasta` transcriptome.
-
-    ```bash
-    # Prepare the BLAST database from your mikado transcripts
-    conda activate blast
-    makeblastdb -in /path/to/your/mikado.fasta -dbtype nucl
-
-    # Run blastn
-    blastn -num_threads 4 -evalue 1e-5 -max_target_seqs 1 -max_hsps 1 \
-      -outfmt "6 qseqid sseqid pident length mismatch qcovs evalue bitscore" \
-      -db /path/to/your/mikado.fasta \
-      -query artemisinin_realted_genes.fasta \
-      -out ./mikado_vs_artemisinin.outfmt
-    ```
-
-3.  **Search with Protein Sequences**: For a more sensitive search, you can use `tblastn` to query protein sequences from a review article against your nucleotide transcriptome.
-
-    ```bash
-    tblastn -num_threads 4 -evalue 1e-5 -max_target_seqs 5 -max_hsps 1 \
-      -outfmt "6 qseqid sseqid pident length mismatch qcovs evalue bitscore" \
-      -db mikado.fasta \
-      -query art_related_genes_p.txt \
-      -out ./mikado_vs_artemisinin_hort_p.outfmt
-    ```
-
-This process provides a table of hits, allowing you to identify which of your transcripts are homologous to known artemisinin-related genes.
