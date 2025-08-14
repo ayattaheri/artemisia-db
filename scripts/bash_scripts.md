@@ -1,3 +1,5 @@
+# Artemisia Database Development: Bash Scripts
+
 ## Table of Contents
 - [Artemisia Database Development: Bash Scripts](#artemisia-database-development-bash-scripts)
   - [Conversion of SRA Files to FASTQ Using fastq-dump (3.1.0)](#conversion-of-sra-files-to-fastq-using-fastq-dump-310)
@@ -115,7 +117,6 @@
     - [**Identification of Artemisinin-Related Genes**](#identification-of-artemisinin-related-genes)
       - [**Procedure**](#procedure)
 
-# Artemisia Database Development: Bash Scripts
 
 ## Conversion of SRA Files to FASTQ Using fastq-dump (3.1.0)
 ### Installation of sra-tools
