@@ -1,5 +1,4 @@
 ## Table of Contents
-  - [Table of Contents](#table-of-contents)
 - [Load required packages](#load-required-packages)
 - [Load and Filter Metadata by Mapping Rate](#load-and-filter-metadata-by-mapping-rate)
 - [Merge Metadata with Alignment Results](#merge-metadata-with-alignment-results)
@@ -27,13 +26,14 @@
 - [Select Optimal Perplexity and Finalize t-SNE Plot](#select-optimal-perplexity-and-finalize-t-sne-plot)
 - [Save Final t-SNE Plot and Coordinates](#save-final-t-sne-plot-and-coordinates)
 - [Update atlas_counts_sce with Optimal t-SNE](#update-atlas_counts_sce-with-optimal-t-sne)
-- [UMAP — Nearest Neighbors Parameter Tuning](#umap-nearest-neighbors-parameter-tuning)
+- [# Step 20: UMAP — Nearest Neighbors Parameter Tuning](#step-20-umap-nearest-neighbors-parameter-tuning)
 - [Visualize All UMAP Results](#visualize-all-umap-results)
 - [Save UMAP Comparison Panel](#save-umap-comparison-panel)
 - [Select Optimal `n_neighbors` and Finalize UMAP Plot](#select-optimal-n_neighbors-and-finalize-umap-plot)
 - [Save Final UMAP Plot and Coordinates](#save-final-umap-plot-and-coordinates)
 - [Update `atlas_counts_sce` with Optimal UMAP](#update-atlas_counts_sce-with-optimal-umap)
 - [Export Gene-Level Expression Data to Partitioned Parquet](#export-gene-level-expression-data-to-partitioned-parquet)
+    - [Output Schema](#output-schema)
 - [Export Gene- and Transcript-Level Expression Data by Plant Part](#export-gene--and-transcript-level-expression-data-by-plant-part)
 - [Calculate Gene Expression Specificity Using the Tau (τ) Index](#calculate-gene-expression-specificity-using-the-tau-τ-index)
 - [Load Expression Data and Compute Median TPM per Tissue](#load-expression-data-and-compute-median-tpm-per-tissue)
@@ -43,13 +43,69 @@
 - [Step 30: Identify Tissues of Specific Expression for Tissue-Specific Genes](#step-30-identify-tissues-of-specific-expression-for-tissue-specific-genes)
 - [Visualize Gene Classification Distribution](#visualize-gene-classification-distribution)
   - [Bar chart](#bar-chart)
+    - [Save Bar Chart](#save-bar-chart)
   - [Pie chart](#pie-chart)
+    - [Save Pie Chart](#save-pie-chart)
   - [Donut chart](#donut-chart)
+    - [Save Donut Chart](#save-donut-chart)
 - [UpSet Plot — Co-Specificity Across Tissues](#upset-plot-co-specificity-across-tissues)
+    - [Save UpSet Plot](#save-upset-plot)
 - [Heatmap — Expression Profiles of Tissue-Specific Genes](#heatmap-expression-profiles-of-tissue-specific-genes)
+    - [Save Heatmap](#save-heatmap)
 - [Integrate Multi-Source Functional Annotations](#integrate-multi-source-functional-annotations)
 - [Clean and Filter Annotation for the database](#clean-and-filter-annotation-for-the-database)
-- [Prepare Functional Ter](#prepare-functional-ter)
+- [Prepare Functional Term Sets](#prepare-functional-term-sets)
+  - [GO Terms (from InterPro)](#go-terms-from-interpro)
+  - [InterPro Domains](#interpro-domains)
+  - [KEGG Orthology (KO) Terms](#kegg-orthology-ko-terms)
+- [Over-Representation Analysis (ORA) for Tissue-Specific Genes](#over-representation-analysis-ora-for-tissue-specific-genes)
+- [Visualize Enriched Biological Processes Across Tissues](#visualize-enriched-biological-processes-across-tissues)
+  - [Save Functional Heatmap](#save-functional-heatmap)
+- [Identify Tissue-Specific Transcription Factors (TFs)](#identify-tissue-specific-transcription-factors-tfs)
+  - [Load and Map PlantTFDB Annotations](#load-and-map-planttfdb-annotations)
+  - [Count TFs by Family](#count-tfs-by-family)
+  - [Identify Tissue-Specific TFs](#identify-tissue-specific-tfs)
+  - [Heatmap of Tissue-Specific Transcription Factors](#heatmap-of-tissue-specific-transcription-factors)
+  - [Bar Plot of All TF Families (PlantTFDB-Based)](#bar-plot-of-all-tf-families-planttfdb-based)
+  - [Identify TFs Using PFAM Domains](#identify-tfs-using-pfam-domains)
+  - [Export Interactive TF Family Table](#export-interactive-tf-family-table)
+- [Identify Tissue-Specific TFs Using PFAM Domains](#identify-tissue-specific-tfs-using-pfam-domains)
+  - [Create Heatmap of PFAM-Based Tissue-Specific TFs](#create-heatmap-of-pfam-based-tissue-specific-tfs)
+- [Integrate TF Annotations from PlantTFDB and PFAM](#integrate-tf-annotations-from-planttfdb-and-pfam)
+- [Create Final Heatmap — Integrated Tissue-Specific TFs](#create-final-heatmap-integrated-tissue-specific-tfs)
+  - [Export Final Tissue-Specific TF Table](#export-final-tissue-specific-tf-table)
+- [Identify CRISPR Arrays in the Transcriptome](#identify-crispr-arrays-in-the-transcriptome)
+- [Epigenetic Regulators](#epigenetic-regulators)
+  - [Identify m⁶A RNA Methylation Regulators](#identify-m⁶a-rna-methylation-regulators)
+- [Identify DNA Methylation-Related Genes](#identify-dna-methylation-related-genes)
+  - [Identify Histone H3 Modification Genes](#identify-histone-h3-modification-genes)
+- [Artemisinin-Related Gene Analysis](#artemisinin-related-gene-analysis)
+  - [Identify Artemisinin Biosynthesis-Related Genes](#identify-artemisinin-biosynthesis-related-genes)
+  - [Median Expression of Artemisinin-Related Genes Across Tissues](#median-expression-of-artemisinin-related-genes-across-tissues)
+  - [Tissue-Specificity of Artemisinin-Related Genes](#tissue-specificity-of-artemisinin-related-genes)
+  - [Expression Classification of Artemisinin-Related Genes](#expression-classification-of-artemisinin-related-genes)
+- [Final Wrap-Up](#final-wrap-up)
+  - [Save Key Objects for Future Use](#save-key-objects-for-future-use)
+
+---
+title: "01_creating_the_AEA"
+author: "Ayat Taheri"
+date: "2024-05-17"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 3
+    fig_width: 8
+    fig_height: 6
+    theme: cosmo
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
 
 # Set seed for reproducibility
 set.seed(123)
@@ -639,7 +695,7 @@ saveRDS(atlas_counts_sce, here("data/08_dge/atlas_counts_sce.rds"))
 
 
 
-# UMAP — Nearest Neighbors Parameter Tuning
+# # Step 20: UMAP — Nearest Neighbors Parameter Tuning
 We now apply **Uniform Manifold Approximation and Projection (UMAP)** using the top 12 principal components (PCs), as before.
 
 UMAP’s `n_neighbors` parameter controls:
@@ -1566,4 +1622,1001 @@ write_csv(
 
 ```
 
-# Prepare Functional Ter
+# Prepare Functional Term Sets
+We prepare three types of functional terms for enrichment analysis.
+
+## GO Terms (from InterPro)
+```{r}
+# Extract GO terms
+go_terms <- unified %>%
+  filter(!is.na(GO_id), GO_id != "-") %>%
+  select(Gene = GENEID, GO_id) %>%
+  mutate(GO_id = str_split(GO_id, "\\|")) %>%
+  unnest(GO_id) %>%
+  mutate(GO_id = str_remove(GO_id, "\\(InterPro\\)")) %>%
+  filter(GO_id != "") %>%
+  distinct()
+
+# Get GO term descriptions
+go_names <- get_names(go_terms$GO_id) %>%
+  drop_na() %>%
+  rename(GO_ID = go_id, GO_Description = go_name)
+
+# Combine
+unified_go <- left_join(
+  go_terms %>% rename(GO_ID = GO_id),
+  go_names,
+  by = "GO_ID"
+) %>%
+  distinct()
+
+# Save
+write_csv(unified_go, here("data/08_functional_annotation/unified_go.csv"))
+
+# Format for `clusterProfiler`
+go_list <- list(
+  term2gene = unified_go %>% select(GO = GO_ID, Gene = Gene),
+  term2name = unified_go %>% select(GO = GO_ID, Description = GO_Description)
+)
+
+```
+## InterPro Domains
+
+```{r}
+interpro_terms <- unified %>%
+  filter(
+    !is.na(InterPro_ID), InterPro_ID != "-",
+    !is.na(InterPro_Description), InterPro_Description != "-"
+  ) %>%
+  select(Gene = GENEID, InterPro_ID, InterPro_Description)
+
+interpro_list <- list(
+  term2gene = interpro_terms %>% select(InterPro = InterPro_ID, Gene = Gene),
+  term2name = interpro_terms %>% select(InterPro = InterPro_ID, Description = InterPro_Description)
+)
+
+```
+## KEGG Orthology (KO) Terms
+We extract KO IDs from eggNOG and map them to descriptions.
+
+```{r}
+# Extract KO IDs
+kegg_ko <- unified %>%
+  filter(!is.na(KEGG_ko), KEGG_ko != "-") %>%
+  select(Gene = GENEID, KEGG_ko) %>%
+  separate_longer_delim(KEGG_ko, delim = ",") %>%
+  distinct()
+
+# Save for external lookup (e.g., KEGG website)
+write_tsv(
+  kegg_ko$KEGG_ko %>% unique(),
+  here("data/08_functional_annotation/kegg_ko_ids.txt"),
+  col_names = FALSE
+)
+
+# Load manually retrieved KO descriptions
+# (Obtained via KEGG website: https://www.genome.jp/kegg/ko.html)
+ko_names <- read_tsv(
+  here("data/08_functional_annotation/ko_names.txt"),
+  col_names = c("KEGG_ko", "ko_Description")
+) %>%
+  distinct()
+
+# Join
+kegg_ko <- kegg_ko %>%
+  left_join(ko_names, by = "KEGG_ko") %>%
+  filter(!is.na(ko_Description))
+
+# Save
+write_csv(kegg_ko, here("data/08_functional_annotation/kegg_ko.csv"))
+
+# Format for `clusterProfiler`
+kegg_list <- list(
+  term2gene = kegg_ko %>% select(KEGG = KEGG_ko, Gene = Gene),
+  term2name = kegg_ko %>% select(KEGG = KEGG_ko, Description = ko_Description)
+)
+  
+```
+# Over-Representation Analysis (ORA) for Tissue-Specific Genes
+We test for enriched functions in each tissue-specific gene set, using expressed genes as background.
+
+```{r}
+# Background: all expressed genes
+background_genes <- final_classified_genes %>%
+  filter(Classification != "Null expression") %>%
+  pull(Gene) %>%
+  unique()
+
+# Perform ORA for each tissue
+enrichment_results <- lapply(specific_genes_list, function(gene_set) {
+  # GO enrichment
+  go_enrich <- enricher(
+    gene = gene_set,
+    universe = background_genes,
+    TERM2GENE = go_list$term2gene,
+    TERM2NAME = go_list$term2name,
+    pvalueCutoff = 1,
+    qvalueCutoff = 0.05,
+    minGSSize = 5
+  )
+
+  # InterPro enrichment
+  interpro_enrich <- enricher(
+    gene = gene_set,
+    universe = background_genes,
+    TERM2GENE = interpro_list$term2gene,
+    TERM2NAME = interpro_list$term2name,
+    pvalueCutoff = 1,
+    qvalueCutoff = 0.05,
+    minGSSize = 5
+  )
+
+  # KEGG enrichment
+  kegg_enrich <- enricher(
+    gene = gene_set,
+    universe = background_genes,
+    TERM2GENE = kegg_list$term2gene,
+    TERM2NAME = kegg_list$term2name,
+    pvalueCutoff = 1,
+    qvalueCutoff = 0.05,
+    minGSSize = 5
+  )
+
+  # Combine
+  bind_rows(
+    as.data.frame(go_enrich) %>% mutate(Category = "GO"),
+    as.data.frame(interpro_enrich) %>% mutate(Category = "InterPro"),
+    as.data.frame(kegg_enrich) %>% mutate(Category = "KEGG")
+  )
+})
+
+# Combine all results
+enrichment_df <- bind_rows(enrichment_results, .id = "Part") %>%
+  filter(qvalue <= 0.05) %>%
+  arrange(Part, qvalue)
+
+# Save
+write_tsv(
+  enrichment_df,
+  here("data/08_functional_annotation/enrichment_df.tsv")
+)
+
+```
+
+# Visualize Enriched Biological Processes Across Tissues
+We create a **presence/absence heatmap** of the **top 15 enriched terms** (GO, InterPro, KEGG) for each **tissue-specific gene set**.
+
+This reveals:
+- Which biological processes are uniquely or commonly enriched
+- Functional specialization of each plant part
+```{r}
+# Extract top 15 most significant terms per tissue
+top_terms <- enrichment_df %>%
+  group_by(Part) %>%
+  slice_min(qvalue, n = 15) %>%  # Use qvalue (FDR) instead of p.adjust
+  ungroup() %>%
+  mutate(Description = str_to_title(Description))  # Capitalize first letter of each word
+
+# Create list: tissue → enriched terms
+terms_list <- split(top_terms$Description, top_terms$Part)
+
+# Convert to binary presence/absence matrix
+pam <- list_to_matrix(terms_list)
+
+# Define colors: absent = light blue, present = dark blue
+custom_colors <- c("0" = "#ACC8E5", "1" = "#112A46")
+
+# Create heatmap
+p_heatmap_terms <- pheatmap(
+  pam,
+  color = custom_colors,
+  breaks = c(0, 0.5, 1),
+  name = "Term Enrichment",
+  main = "Top Enriched Functions in Tissue-Specific Genes",
+  fontsize_row = 6,
+  fontsize_col = 8,
+  cellwidth = unit(1.1, "cm"),
+  border_color = "white",
+  show_rownames = TRUE,
+  show_colnames = TRUE,
+  cluster_rows = TRUE,
+  cluster_cols = TRUE
+)
+
+# Adjust dendrogram size
+p_heatmap_terms@row_dend_param$width <- unit(5, "mm")
+p_heatmap_terms@column_dend_param$height <- unit(5, "mm")
+
+```
+
+## Save Functional Heatmap
+```{r}
+dir.create(here("data/figures"), showWarnings = FALSE, recursive = TRUE)
+
+ggsave(
+  here("data/figures/p_heatmap_terms_pav.png"),
+  as.ggplot(p_heatmap_terms),
+  width = 14, height = 10, dpi = 300, bg = "white"
+)
+
+
+```
+
+# Identify Tissue-Specific Transcription Factors (TFs)
+
+We identify transcription factors (TFs) within tissue-specific genes using annotations from PlantTFDB.
+
+## Load and Map PlantTFDB Annotations
+```{r}
+# Load TF list from PlantTFDB
+plant_tfs <- read_tsv(
+  here("data/08_functional_annotation/transcription_factor/all_tf_list.txt"),
+  col_names = TRUE
+)
+
+# Load BLAST results (transcriptome vs. PlantTFDB)
+blast_results <- read_tsv(
+  here("data/08_functional_annotation/transcription_factor/transcriptome_vs_all_tf.outfmt6"),
+  col_names = FALSE
+) %>%
+  rename(TF_ID = X2, TXNAME = X1)
+
+# Join to get TF annotations for transcripts
+tf_annotations <- plant_tfs %>%
+  select(TF_ID, Family) %>%
+  inner_join(blast_results, by = "TF_ID") %>%
+  select(TXNAME, TF_ID, Family)
+
+# Map to genes using tx2gene
+tf_gene_mapping <- tf_annotations %>%
+  inner_join(tx2gene, by = "TXNAME") %>%
+  select(Gene = GENEID, TF_ID, Family) %>%
+  distinct()
+
+# Save full TF list
+write_csv(
+  tf_gene_mapping,
+  here("data/08_functional_annotation/transcription_factor/artemisia_all_tfdb.csv")
+)
+```
+##  Count TFs by Family
+
+```{r}
+# Count TFs per family
+tf_family_counts <- tf_gene_mapping %>%
+  group_by(Family) %>%
+  summarise(Count = n(), .groups = "drop") %>%
+  arrange(desc(Count))
+
+# Save
+write_csv(
+  tf_family_counts,
+  here("data/08_functional_annotation/transcription_factor/artemisia_all_tfdb_count.csv")
+)
+
+# Optional: Bar plot of TF families
+# ggplot(tf_family_counts, aes(x = reorder(Family, Count), y = Count)) +
+#   geom_col(fill = "#57c785") + coord_flip() + theme_minimal()
+```
+
+## Identify Tissue-Specific TFs
+
+```{r}
+# Get tissue-specific genes
+tissue_specific_genes <- final_classified_genes %>%
+  filter(Classification == "Tissue-specific") %>%
+  pull(Gene)
+
+# Find TFs among them
+tissue_specific_tfs <- tf_gene_mapping %>%
+  filter(Gene %in% tissue_specific_genes)
+
+# Add tissue context
+tissue_specific_tfs_with_part <- tissue_specific_tfs %>%
+  inner_join(
+    final_classified_genes %>%
+      filter(Gene %in% tissue_specific_tfs$Gene) %>%
+      select(Gene, Specific_parts),
+    by = "Gene"
+  )
+
+# Save
+write_csv(
+  tissue_specific_tfs_with_part,
+  here("data/08_functional_annotation/transcription_factor/tissue_specific_tfs.csv")
+)
+```
+
+
+## Heatmap of Tissue-Specific Transcription Factors
+We visualize the **abundance of transcription factors (TFs)** among **tissue-specific genes**, showing which TF families dominate in each plant part.
+
+```{r include=FALSE}
+# Create TF count matrix: Family × Tissue
+tf_counts_matrix <- tissue_specific_tfs_with_part %>%
+  separate_rows(Specific_parts, sep = ", ") %>%
+  mutate(Specific_parts = str_trim(Specific_parts)) %>%
+  group_by(Specific_parts, Family) %>%
+  summarise(count = n(), .groups = "drop") %>%
+  pivot_wider(names_from = Family, values_from = count, fill = 0)
+
+# Log2-transform for visualization
+tf_log_matrix <- log2(as.matrix(tf_counts_matrix[, -1]) + 1)
+rownames(tf_log_matrix) <- tf_counts_matrix$Specific_parts
+
+# Define color palette
+pal <- colorRampPalette(brewer.pal(9, "BuGn"))(100)[1:70]
+
+# Create heatmap
+p_heatmap_tfs <- pheatmap(
+  tf_log_matrix,
+  color = pal,
+  display_numbers = as.matrix(tf_counts_matrix[, -1]),
+  border_color = "gray90",
+  name = "Log2 Count",
+  main = "Transcription Factors in Tissue-Specific Genes",
+  cellwidth = unit(0.6, "cm"),
+  cellheight = unit(0.6, "cm"),
+  fontsize_col = 7,
+  fontsize_row = 8,
+  angle_col = 45,
+  cluster_rows = TRUE,
+  cluster_cols = TRUE
+)
+
+# Save the heatmap
+dir.create(here("data/figures"), showWarnings = FALSE, recursive = TRUE)
+
+ggsave(
+  here("data/figures/p_heatmap_specific_tfs.png"),
+  as.ggplot(p_heatmap_tfs),
+  width = 10, height = 6, dpi = 300, bg = "white"
+)
+
+```
+
+## Bar Plot of All TF Families (PlantTFDB-Based)
+
+```{r}
+# Load full TF count data
+artemisia_all_tfdb_count <- read_csv(
+  here("data/08_functional_annotation/transcription_factor/artemisia_all_tfdb_count.csv")
+)
+
+p_tf_bar <- ggplot(artemisia_all_tfdb_count, aes(x = reorder(Family, Count), y = Count)) +
+  geom_col(fill = "steelblue") +
+  coord_flip() +
+  labs(
+    title = "Transcription Factor Family Distribution",
+    subtitle = "Based on PlantTFDB annotations",
+    x = "TF Family",
+    y = "Number of TFs"
+  ) +
+  theme_minimal() +
+  theme(axis.text.y = element_text(size = 8))
+
+print(p_tf_bar)
+
+# Save the plot
+ggsave(
+  here("data/figures/planttfdb_all_bar.png"),
+  p_tf_bar,
+  width = 9, height = 7, dpi = 300, bg = "white"
+)
+```
+
+
+## Identify TFs Using PFAM Domains
+We cross-validate TF annotations using PFAM domain signatures from InterProScan.
+
+```{r}
+# Load PFAM-to-TF family mapping
+pfam_map <- read_tsv(
+  here("data/08_functional_annotation/transcription_factor/tf_family_pfam.ids"),
+  col_names = c("Pfam_ID", "Family")
+)
+
+# Load InterProScan results
+interpro_all <- read_tsv(
+  here("data/08_functional_annotation/interproscan/mikado_interproscan.tsv"),
+  col_names = FALSE
+) %>%
+  rename(
+    Query = X1, Tool = X4, Pfam_ID = X5, Description = X6,
+    Evalue = X9
+  )
+
+# Filter for high-confidence PFAM hits
+pfam_hits <- interpro_all %>%
+  filter(Tool == "Pfam", Evalue < 1e-5) %>%
+  select(Query, Pfam_ID, Description)
+
+# Extract TF-related hits
+pfam_tfs <- pfam_hits %>%
+  semi_join(pfam_map, by = "Pfam_ID") %>%
+  mutate(TXNAME = str_remove(Query, "_\\d+$"))
+
+# Map to genes
+pfam_tfs_gene <- pfam_tfs %>%
+  left_join(tx2gene %>% rename(TXNAME = TXNAME), by = "TXNAME") %>%
+  select(Gene = GENEID, Pfam_ID, Family = Description) %>%
+  left_join(pfam_map, by = "Pfam_ID") %>%
+  select(Gene, Pfam_ID, Family = Family.y) %>%
+  distinct()
+
+# Save
+write_csv(
+  pfam_tfs_gene,
+  here("data/08_functional_annotation/transcription_factor/pfam_tf_family.csv")
+)
+
+# Count by family
+pfam_tf_counts <- pfam_tfs_gene %>%
+  group_by(Family) %>%
+  summarise(Count = n(), .groups = "drop") %>%
+  arrange(desc(Count))
+
+write_csv(
+  pfam_tf_counts,
+  here("data/08_functional_annotation/transcription_factor/pfam_tf_family_count.csv")
+)
+
+```
+
+## Export Interactive TF Family Table
+
+```{r}
+# Use PlantTFDB-based counts
+tf_family_table <- artemisia_all_tfdb_count %>%
+  arrange(desc(Count)) %>%
+  rename(`TF Family` = Family, Count = Count)
+
+# Create styled HTML table
+table_html <- kable(
+  tf_family_table,
+  format = "html",
+  col.names = c("TF Family", "Count"),
+  caption = "Transcription Factor Family Counts in the Transcriptome"
+) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+    full_width = FALSE
+  )
+
+# Save
+save_kable(table_html, file = here("docs/tf_family_count_table.html"))
+
+```
+
+# Identify Tissue-Specific TFs Using PFAM Domains
+We identify **transcription factors (TFs)** based on **diagnostic PFAM domains**, independent of PlantTFDB, for cross-validation.
+```{r}
+
+# Load PFAM-to-TF mapping
+pfam_map <- read_tsv(
+  here("data/08_functional_annotation/transcription_factor/tf_family_pfam.ids"),
+  col_names = c("Pfam_ID", "Family")
+)
+
+# Load filtered PFAM hits (from InterProScan, E-value < 1e-5)
+filtered_pfam <- read_tsv(
+  here("data/08_functional_annotation/interproscan/mikado_interproscan.tsv"),
+  col_names = FALSE
+) %>%
+  rename(Query = X1, Tool = X4, Pfam_ID = X5, Evalue = X9) %>%
+  filter(Tool == "Pfam", Evalue < 1e-5) %>%
+  select(Query, Pfam_ID) %>%
+  # Remove isoform suffix
+  mutate(TXNAME = str_remove(Query, "_\\d+$"))
+
+# Join with TF family map
+pfam_tfs <- filtered_pfam %>%
+  inner_join(pfam_map, by = "Pfam_ID") %>%
+  inner_join(tx2gene %>% rename(TXNAME = TXNAME), by = "TXNAME") %>%
+  select(Gene = GENEID, Family) %>%
+  distinct()
+
+# Save
+write_csv(
+  pfam_tfs,
+  here("data/08_functional_annotation/transcription_factor/pfam_tf_family.csv")
+)
+
+```
+
+## Create Heatmap of PFAM-Based Tissue-Specific TFs
+Visualize TF family counts across tissues using PFAM-only annotations.
+
+```{r include=FALSE}
+# Get tissue-specific genes
+tissue_specific_genes <- final_classified_genes %>%
+  filter(Classification == "Tissue-specific") %>%
+  select(Gene, Specific_parts)
+
+# Combine with PFAM TFs
+pfam_tf_enriched <- inner_join(tissue_specific_genes, pfam_tfs, by = "Gene") %>%
+  mutate(Specific_parts = str_to_title(Specific_parts)) %>%
+  separate_longer_delim(Specific_parts, delim = ",") %>%
+  mutate(Specific_parts = str_trim(Specific_parts)) %>%
+  group_by(Specific_parts) %>%
+  count(Family, .drop = FALSE) %>%
+  pivot_wider(names_from = Family, values_from = n, fill = 0) %>%
+  column_to_rownames("Specific_parts") %>%
+  as.matrix()
+
+# Replace NA with 0
+pfam_tf_enriched[is.na(pfam_tf_enriched)] <- 0
+
+# Define color palette
+pal <- colorRampPalette(brewer.pal(9, "BuGn"))(100)[1:70]
+
+# Create heatmap
+p_heatmap_pfam_tfs <- pheatmap(
+  log2(pfam_tf_enriched + 1),
+  color = pal,
+  display_numbers = pfam_tf_enriched,
+  border_color = "gray90",
+  name = "Log2 Count",
+  main = "PFAM-Based TFs in Tissue-Specific Genes",
+  cellwidth = unit(0.6, "cm"),
+  cellheight = unit(0.6, "cm"),
+  fontsize_col = 7,
+  fontsize_row = 8,
+  angle_col = 45,
+  cluster_rows = TRUE,
+  cluster_cols = TRUE
+)
+
+# Save PFAM TF Heatmap
+ggsave(
+  here("data/figures/p_heatmap_pfam_specific_tfs.png"),
+  as.ggplot(p_heatmap_pfam_tfs),
+  width = 12, height = 6, dpi = 300, bg = "white"
+)
+
+```
+
+# Integrate TF Annotations from PlantTFDB and PFAM
+We create a consensus TF annotation:
+
+- Priority: PlantTFDB (curated database)
+- Fallback: PFAM domain (functional signature)
+
+This ensures maximum coverage with high confidence.
+
+```{r}
+# Load PlantTFDB-based TFs
+plant_tfs <- read_csv(
+  here("data/08_functional_annotation/transcription_factor/artemisia_all_tfdb.csv")
+) %>%
+  select(Gene, Family)
+
+# Combine: use PlantTFDB first, then PFAM
+combined_tfs <- full_join(plant_tfs, pfam_tfs, by = "Gene", suffix = c(".plant", ".pfam")) %>%
+  mutate(Family = coalesce(Family.plant, Family.pfam)) %>%
+  select(Gene, Family) %>%
+  distinct()
+
+# Save combined TF list
+write_csv(
+  combined_tfs,
+  here("data/08_functional_annotation/transcription_factor/combined_tfs.csv")
+)
+
+```
+
+# Create Final Heatmap — Integrated Tissue-Specific TFs
+Generate a high-confidence heatmap using integrated TF annotations.
+
+```{r include=FALSE}
+# Get tissue-specific TFs
+combined_tf_data <- inner_join(
+  final_classified_genes %>% filter(Classification == "Tissue-specific"),
+  combined_tfs,
+  by = "Gene"
+) %>%
+  select(Gene, Specific_parts, Family) %>%
+  mutate(Specific_parts = str_to_title(Specific_parts)) %>%
+  separate_longer_delim(Specific_parts, delim = ",") %>%
+  mutate(Specific_parts = str_trim(Specific_parts))
+
+# Create count matrix
+combined_tf_matrix <- combined_tf_data %>%
+  group_by(Specific_parts, Family) %>%
+  summarise(n = n(), .groups = "drop") %>%
+  pivot_wider(names_from = Family, values_from = n, fill = 0) %>%
+  column_to_rownames("Specific_parts") %>%
+  as.matrix()
+
+# Replace NA
+combined_tf_matrix[is.na(combined_tf_matrix)] <- 0
+
+# Save for web (Plotly)
+saveRDS(
+  combined_tf_matrix,
+  here("data/08_functional_annotation/transcription_factor/combined_tf_counts_matrix.rds")
+)
+
+# Create heatmap
+pal <- colorRampPalette(brewer.pal(9, "BuGn"))(100)[1:70]
+
+p_heatmap_combined <- pheatmap(
+  log2(combined_tf_matrix + 1),
+  color = pal,
+  display_numbers = combined_tf_matrix,
+  border_color = "gray90",
+  name = "Log2 Count",
+  main = "Integrated TFs in Tissue-Specific Genes",
+  cellwidth = unit(0.6, "cm"),
+  cellheight = unit(0.6, "cm"),
+  fontsize_col = 7,
+  fontsize_row = 8,
+  angle_col = 45,
+  cluster_rows = TRUE,
+  cluster_cols = TRUE
+)
+
+# Save Combined TF Heatmap
+
+ggsave(
+  here("data/figures/p_heatmap_combined_tfs.png"),
+  as.ggplot(p_heatmap_combined),
+  width = 12, height = 6, dpi = 300, bg = "white"
+)
+
+```
+
+## Export Final Tissue-Specific TF Table
+
+```{r}
+# Add tissue context
+combined_tf_counts <- combined_tf_data %>%
+  arrange(Specific_parts, Family, Gene)
+
+# Save
+write_csv(
+  combined_tf_counts,
+  here("data/08_functional_annotation/transcription_factor/combined_tissue-specific-tfs.csv")
+)
+```
+
+
+# Identify CRISPR Arrays in the Transcriptome
+We analyze CRISPR loci identified by **CasFinder** to explore genome defense systems.
+
+```{r}
+# Load CRISPR predictions from CasFinder
+raw_crispr <- read_tsv(
+  here("data/08_functional_annotation/crispr/Crisprs_REPORT.tsv")
+)
+
+# Select and clean relevant columns
+crispr_clean <- raw_crispr %>%
+  select(
+    Sequence = Sequence,
+    CRISPR_Id,
+    CRISPR_Start,
+    CRISPR_End,
+    CRISPR_Length,
+    `Potential_Orientation (AT%)`,
+    Consensus_Repeat
+  ) %>%
+  # Fix sequence naming (replace _ with . for compatibility)
+  mutate(
+    Sequence = sub("_(\\d+)$", ".\\1", Sequence),
+    Sequence = gsub("mikado_Super", "mikado.Super", Sequence)
+  )
+
+# Map to genes using tx2gene
+crispr_genes <- crispr_clean %>%
+  left_join(tx2gene %>% rename(Sequence = TXNAME), by = "Sequence") %>%
+  select(
+    gene_id = GENEID,
+    CRISPR_Start,
+    CRISPR_End,
+    CRISPR_Length,
+    `Potential_Orientation (AT%)`,
+    Consensus_Repeat
+  ) %>%
+  distinct()
+
+# Save
+write_csv(
+  crispr_genes,
+  here("data/08_functional_annotation/crispr/crispr_final.csv")
+)
+```
+
+# Epigenetic Regulators
+## Identify m⁶A RNA Methylation Regulators
+We identify writers, readers, and erasers of N⁶-methyladenosine (m⁶A) — a key post-transcriptional regulator.
+
+```{r}
+# Define Pfam signatures for m⁶A regulators
+m6a_families <- tibble(
+  Type = c("Writer", "Writer", "Writer", "Writer", "Reader", "Eraser"),
+  Gene_Family = c("MTA70", "WTAP", "HAKAI", "VIRILIZER", "YTH", "AlkB"),
+  pfam_id = c("PF05063", "PF17098", "PF18408", "PF15912", "PF04146", "PF13532")
+)
+
+# Extract from InterProScan results
+m6a_hits <- pfam_filtered_ids %>%
+  rename(pfam_id = X5) %>%
+  inner_join(m6a_families, by = "pfam_id") %>%
+  select(TXNAME, Type, Gene_Family, pfam_id)
+
+# Map to genes
+m6a_genes <- m6a_hits %>%
+  left_join(tx2gene %>% rename(TXNAME = TXNAME), by = "TXNAME") %>%
+  select(gene_id = GENEID, Type, Gene_Family, pfam_id) %>%
+  distinct()
+
+# Save
+write_csv(
+  m6a_genes,
+  here("data/08_functional_annotation/methylation/m6a/m6a_genes.csv")
+)
+
+# Summary
+m6a_summary <- m6a_genes %>%
+  group_by(Type) %>%
+  summarise(Count = n(), .groups = "drop")
+
+write_tsv(
+  m6a_summary,
+  here("data/08_functional_annotation/methylation/m6a/m6a_statistics.txt")
+)  
+```
+
+# Identify DNA Methylation-Related Genes
+We identify 5-methylcytosine (5mC) regulators, including DNA methyltransferases and Tet-like enzymes.
+
+```{r}
+# Define Pfam IDs for DNA methylation machinery
+dna_methylation_families <- tibble(
+  Short_name = c("DNA_methylase", "DNMT1-RFD", "TP_methylase"),
+  Name = c(
+    "C-5 cytosine-specific DNA methylase",
+    "Cytosine specific DNA methyltransferase replication foci domain",
+    "Tetrapyrrole (Corrin/Porphyrin) Methylases"
+  ),
+  Pfam_id = c("PF00145", "PF12047", "PF00590")
+)
+
+# Extract and map
+five_methyl_genes <- pfam_filtered_ids %>%
+  rename(Pfam_id = X5) %>%
+  inner_join(dna_methylation_families, by = "Pfam_id") %>%
+  select(TXNAME, Pfam_id, Short_name, Name) %>%
+  left_join(tx2gene %>% rename(TXNAME = TXNAME), by = "TXNAME") %>%
+  select(gene_id = GENEID, Pfam_id, Short_name, Name) %>%
+  distinct()
+
+# Save
+write_csv(
+  five_methyl_genes,
+  here("data/08_functional_annotation/methylation/five_methyladenosine/five_methyl_genes.csv")
+)
+```
+
+## Identify Histone H3 Modification Genes
+We identify PHD and SET domain-containing proteins involved in histone H3 methylation.
+
+```{r}
+# Define Pfam IDs for histone modifiers
+histone_families <- tibble(
+  Short_name = c("PHD", "SET"),
+  Name = c("PHD-finger", "SET domain"),
+  Pfam_id = c("PF00628", "PF00856")
+)
+
+# Extract and map
+histone_h3_genes <- pfam_filtered_ids %>%
+  rename(Pfam_id = X5) %>%
+  inner_join(histone_families, by = "Pfam_id") %>%
+  select(TXNAME, Pfam_id, Short_name, Name) %>%
+  left_join(tx2gene %>% rename(TXNAME = TXNAME), by = "TXNAME") %>%
+  select(gene_id = GENEID, Pfam_id, Short_name, Name) %>%
+  distinct()
+
+# Save
+write_csv(
+  histone_h3_genes,
+  here("data/08_functional_annotation/methylation/histone_h3/histone_h3_genes.csv")
+)
+```
+
+# Artemisinin-Related Gene Analysis
+## Identify Artemisinin Biosynthesis-Related Genes
+We identify genes involved in **artemisinin biosynthesis** by integrating:
+- Known biosynthetic genes from literature (e.g., *ADS*, *CYP71AV1*, *DBR2*, *ALDH1*)
+- Homology-based annotation via BLAST
+- UniProt and gene name mapping
+
+
+```{r}
+# Load reference list of artemisinin-related genes
+art_ref <- read_csv(
+  here("data/08_functional_annotation/artemisinin_related_genes/art_related_genes_hort.csv"),
+  col_names = FALSE
+) %>%
+  rename(id = X2)
+
+# Load BLAST results (transcriptome vs. reference sequences)
+art_blast <- read_tsv(
+  here("data/08_functional_annotation/artemisinin_related_genes/mikado_vs_artemisinin_hort.outfmt"),
+  col_names = FALSE
+) %>%
+  rename(id = X1, TXNAME = X2)
+
+# Join to find matches
+art_matches <- inner_join(art_ref, art_blast, by = "id") %>%
+  select(id, TXNAME)
+
+# Clean UniProt IDs (extract primary ID between | |)
+uniprot_clean <- uniprot %>%
+  mutate(uniprot_id = str_extract(Uniprot_ID, "(?<=\\|)[^|]+(?=\\|)")) %>%
+  rename(id = uniprot_id)
+
+# Add UniProt annotation
+art_with_annotation <- left_join(art_matches, uniprot_clean, by = "id") %>%
+  mutate(TXNAME_final = coalesce(TXNAME.x, TXNAME.y)) %>%
+  select(id, TXNAME = TXNAME_final) %>%
+  na.omit()
+
+# Map to genes
+art_genes <- art_with_annotation %>%
+  left_join(tx2gene %>% rename(TXNAME = TXNAME), by = "TXNAME") %>%
+  select(GENEID, TXNAME, id) %>%
+  rename(annotation = id) %>%
+  distinct()
+
+# Save
+write_csv(
+  art_genes,
+  here("data/08_functional_annotation/artemisinin_related_genes/artemisinin_genes.csv")
+)
+
+```
+
+## Median Expression of Artemisinin-Related Genes Across Tissues
+We examine median TPM of artemisinin genes in each plant part.
+
+```{r}
+
+# Load median expression per gene per tissue
+genes_median <- read_csv(
+  here("data/metadata/median_per_part_long.csv"),
+  col_types = cols(Median = col_double())
+)
+
+# Join with artemisinin genes
+art_expression <- art_genes %>%
+  rename(Gene = GENEID) %>%
+  inner_join(genes_median, by = "Gene") %>%
+  select(Gene, TXNAME, annotation, Part, Median_TPM = Median)
+
+# Save
+write_csv(
+  art_expression,
+  here("data/08_functional_annotation/artemisinin_related_genes/artemisinin_gene_expression.csv")
+)
+```
+
+
+## Tissue-Specificity of Artemisinin-Related Genes
+We determine which artemisinin genes are tissue-specific (τ ≥ 0.85).
+
+```{r}
+# Load gene classification
+final_classified_genes <- read_csv(
+  here("data/metadata/final_classified_genes.csv")
+)
+
+# Filter for tissue-specific artemisinin genes
+specific_art_genes <- final_classified_genes %>%
+  filter(Classification == "Tissue-specific") %>%
+  inner_join(art_genes %>% rename(Gene = GENEID), by = "Gene")
+
+# Save
+write_csv(
+  specific_art_genes,
+  here("data/08_functional_annotation/artemisinin_related_genes/specific_artemisinin_genes.csv")
+)
+```
+
+## Expression Classification of Artemisinin-Related Genes
+We classify all artemisinin-related genes into expression categories.
+
+```{r}
+# Join all classifications
+art_classified <- final_classified_genes %>%
+  inner_join(art_genes %>% rename(Gene = GENEID), by = "Gene")
+
+# Save
+write_csv(
+  art_classified,
+  here("data/08_functional_annotation/artemisinin_related_genes/art_genes_category.csv")
+)
+
+# Summary statistics
+art_summary <- art_classified %>%
+  group_by(Classification) %>%
+  summarise(Count = n(), .groups = "drop")
+
+write_csv(
+  art_summary,
+  here("data/08_functional_annotation/artemisinin_related_genes/art_genes_category_stat.csv")
+)
+
+# Display
+kable(art_summary, caption = "Expression Classification of Artemisinin-Related Genes")
+```
+
+
+# Final Wrap-Up
+## Save Key Objects for Future Use
+To enable **fast reloading** of results and plots without re-running the entire pipeline, we save essential objects in compressed `.rda` format.
+
+```{r}
+# Ensure directory exists
+dir.create(here("data/figures"), showWarnings = FALSE, recursive = TRUE)
+
+# Save key data objects
+save(
+  median_per_part,
+  list = "median_per_part",
+  file = here("data/figures/median_per_part.rda"),
+  compress = "xz"
+)
+
+save(
+  final_classified_genes,
+  list = "final_classified_genes",
+  file = here("data/figures/final_classified_genes.rda"),
+  compress = "xz"
+)
+
+save(
+  enrichment_df,
+  list = "enrichment_df",
+  file = here("data/figures/enrichment_df.rda"),
+  compress = "xz"
+)
+
+# Save key plots (ggplotify::as.ggplot output from pheatmap/UpSet)
+save(
+  p_genes_per_group,
+  list = "p_genes_per_group",
+  file = here("data/figures/p_genes_per_group.rda"),
+  compress = "xz"
+)
+
+save(
+  p_upset,
+  list = "p_upset",
+  file = here("data/figures/p_upset.rda"),
+  compress = "xz"
+)
+
+save(
+  p_heatmap_median,
+  list = "p_heatmap_median",
+  file = here("data/figures/p_heatmap_median.rda"),
+  compress = "xz"
+)
+
+save(
+  p_heatmap_terms_pav,
+  list = "p_heatmap_terms_pav",
+  file = here("data/figures/p_heatmap_terms_pav.rda"),
+  compress = "xz"
+)
+
+save(
+  p_heatmap_specific_tfs,
+  list = "p_heatmap_specific_tfs",
+  file = here("data/figures/p_heatmap_specific_tfs.rda"),
+  compress = "xz"
+)
+```
